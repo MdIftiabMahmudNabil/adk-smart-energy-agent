@@ -346,6 +346,11 @@ class EnergyAgentOrchestrator:
         Returns:
             Dictionary with complete analysis results
         """
+        # Generate session_id if not provided
+        if session_id is None:
+            import uuid
+            session_id = str(uuid.uuid4())
+        
         # Create runner with session management
         # Use sequential_workflow as the main workflow
         runner = Runner(
@@ -394,6 +399,11 @@ class EnergyAgentOrchestrator:
         Returns:
             Dictionary with parallel analysis results
         """
+        # Generate session_id if not provided
+        if session_id is None:
+            import uuid
+            session_id = str(uuid.uuid4())
+        
         runner = Runner(
             agent=self.parallel_analysis_team,
             app_name="SmartEnergyAgent",
@@ -435,6 +445,11 @@ class EnergyAgentOrchestrator:
         Returns:
             Dictionary with sequential analysis results
         """
+        # Generate session_id if not provided
+        if session_id is None:
+            import uuid
+            session_id = str(uuid.uuid4())
+        
         runner = Runner(
             agent=self.sequential_workflow,
             app_name="SmartEnergyAgent",
@@ -474,6 +489,11 @@ class EnergyAgentOrchestrator:
         Returns:
             Dictionary with response
         """
+        # Generate session_id if not provided
+        if session_id is None:
+            import uuid
+            session_id = str(uuid.uuid4())
+        
         runner = Runner(
             agent=self.root_coordinator,
             app_name="SmartEnergyAgent",
