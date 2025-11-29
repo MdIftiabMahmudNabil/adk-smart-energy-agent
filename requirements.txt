@@ -1,0 +1,16 @@
+# Core Dependencies
+google-genai>=1.19.0
+streamlit>=1.51.0
+pandas>=2.0.0
+plotly>=5.0.0
+python-dotenv>=1.0.0
+
+# Excel Export
+xlsxwriter>=3.0.0
+openpyxl>=3.0.0
+
+# Async Support (included with Python 3.11+)
+# asyncio - built-in
+
+# Development and Testing (optional)
+# pytest>=7.0.0
