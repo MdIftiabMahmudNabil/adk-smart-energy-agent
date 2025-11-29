@@ -119,75 +119,41 @@ def parse_bill_from_image(image_path: str) -> dict:
     # Create runner
     runner = InMemoryRunner(agent=bill_parser_agent)
     
-    # Run the agent with image
-    async def run_agent():
-        # Create image part
-        with open(image_path, 'rb') as f:
-            image_data = f.read()
-        
-        image_part = Part.from_bytes(
+    # Use the model directly for image parsing (simpler than runner)
+    from google.genai import Client
+    import os
+    from dotenv import load_dotenv
+    
+    load_dotenv()
+    client = Client(api_key=os.getenv('GOOGLE_API_KEY'))
+    
+    # Read image data
+    with open(image_path, 'rb') as f:
+        image_data = f.read()
+    
+    # Create content with image and text
+    from google.genai import types
+    content = types.Content(parts=[
+        types.Part.from_bytes(
             data=image_data,
             mime_type=f"image/{image_file.suffix.lower().replace('.', '')}"
-        )
-        
-        # Create a message combining image and text instruction
-        message = [
-            image_part,
-            "Parse this utility bill image and extract all key information including account number, billing period, consumption (kWh), rate, charges breakdown, and total amount."
-        ]
-        
-        # Use run_debug which handles sessions automatically
-        return await runner.run_debug(message)
+        ),
+        types.Part(text="Parse this utility bill image and extract all key information including account number, billing period, consumption (kWh), rate, charges breakdown, and total amount. Return the data in JSON format.")
+    ])
     
-    # Handle event loop for Streamlit compatibility
-    import threading
-    result = None
-    exception = None
+    # Call model directly
+    response = client.models.generate_content(
+        model='gemini-2.0-flash-exp',
+        contents=content
+    )
     
-    def run_in_thread():
-        nonlocal result, exception
-        try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            result = loop.run_until_complete(run_agent())
-            loop.close()
-        except Exception as e:
-            exception = e
+    result = response
     
-    thread = threading.Thread(target=run_in_thread)
-    thread.start()
-    thread.join()
-    
-    if exception:
-        raise exception
-    
-    # Extract the response content from list of events
+    # Extract the response content
     import json
     
-    # Handle list of events from run_debug
-    if isinstance(result, list) and len(result) > 0:
-        last_event = result[-1]
-        if hasattr(last_event, 'content') and last_event.content and last_event.content.parts:
-            response_text = last_event.content.parts[0].text
-            
-            # Try to parse JSON from the response
-            try:
-                if '{' in response_text and '}' in response_text:
-                    json_start = response_text.index('{')
-                    json_end = response_text.rindex('}') + 1
-                    json_str = response_text[json_start:json_end]
-                    return json.loads(json_str)
-            except:
-                pass
-                
-            return {
-                "raw_response": response_text,
-                "status": "partial_parse"
-            }
-    
-    # Handle single event (backward compatibility)
-    elif result and hasattr(result, 'content') and result.content and result.content.parts:
-        response_text = result.content.parts[0].text
+    if result and hasattr(result, 'text'):
+        response_text = result.text
         
         # Try to parse JSON from the response
         try:
