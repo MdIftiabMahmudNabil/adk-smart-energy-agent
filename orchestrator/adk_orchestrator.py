@@ -295,12 +295,23 @@ class EnergyAgentOrchestrator:
             Analysis results dictionary
         """
         import asyncio
+        from pathlib import Path
+        
         # Increment analyses count
         if not hasattr(self, '_analyses_count'):
             self._analyses_count = 0
         self._analyses_count += 1
+        
+        # If bill_path is provided, read the file content
+        if bill_path and not bill_data:
+            bill_path_obj = Path(bill_path)
+            if bill_path_obj.exists():
+                bill_data = bill_path_obj.read_text(encoding='utf-8')
+            else:
+                raise FileNotFoundError(f"Bill file not found: {bill_path}")
+        
         # Run the async method synchronously
-        return asyncio.run(self.analyze_complete(bill_data=bill_data or bill_path))
+        return asyncio.run(self.analyze_complete(bill_data=bill_data))
     
     def analyze_meter_data(self, meter_data_path: str) -> dict:
         """
