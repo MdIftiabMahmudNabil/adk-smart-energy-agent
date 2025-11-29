@@ -138,9 +138,9 @@ def parse_bill_from_image(image_path: str) -> dict:
         types.Part(text="Parse this utility bill image and extract all key information including account number, billing period, consumption (kWh), rate, charges breakdown, and total amount. Return the data in JSON format.")
     ])
     
-    # Call model directly (using 2.0-flash-exp - wait if rate limited)
+    # Call model directly (using 2.0-flash-lite for highest rate limits: 30 RPM)
     response = client.models.generate_content(
-        model='gemini-2.0-flash-exp',
+        model='gemini-2.0-flash-lite',
         contents=content
     )
     
