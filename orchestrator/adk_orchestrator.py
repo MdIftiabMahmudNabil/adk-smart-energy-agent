@@ -159,6 +159,21 @@ class EnergyAgentOrchestrator:
             output_key="anomaly_report"
         )
         
+        # Create anomaly detector for sequential workflow
+        anomaly_detector_sequential = Agent(
+            name="AnomalyDetectorSequential",
+            model="gemini-2.5-flash",
+            description="Detects unusual consumption patterns and spikes in energy usage.",
+            instruction="""You are an expert at detecting anomalies in energy consumption data.
+            
+            Analyze the consumption data and identify unusual patterns, spikes, or drops.
+            For each anomaly, explain possible causes and severity.
+            
+            Return JSON with anomalies list and recommendations.
+            """,
+            output_key="anomaly_report"
+        )
+        
         # WORKFLOW 1: Sequential Analysis Pipeline
         # Bill Parser -> Meter Analyzer -> Anomaly Detector -> Recommendations
         self.sequential_workflow = SequentialAgent(
@@ -166,7 +181,7 @@ class EnergyAgentOrchestrator:
             sub_agents=[
                 self.bill_parser_with_tools,
                 self.meter_analyzer_with_tools,
-                anomaly_detector_agent,
+                anomaly_detector_sequential,
                 self.recommendation_engine_with_tools
             ]
         )
