@@ -323,8 +323,14 @@ def show_results(results: dict):
     """Display analysis results."""
     st.header("📊 Analysis Results")
     
-    if results['status'] != 'success':
-        st.error(f"Analysis failed: {results.get('error', 'Unknown error')}")
+    if not results or results.get('status') == 'error':
+        st.error(f"Analysis failed: {results.get('message', 'Unknown error')}")
+        return
+    
+    # Handle new response format (text-based results)
+    if 'response' in results or 'full_text' in results:
+        response_text = results.get('full_text') or results.get('response', '')
+        st.markdown(response_text)
         return
     
     # Create tabs for different result sections
