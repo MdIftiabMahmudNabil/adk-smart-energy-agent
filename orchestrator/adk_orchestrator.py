@@ -310,8 +310,22 @@ class EnergyAgentOrchestrator:
             else:
                 raise FileNotFoundError(f"Bill file not found: {bill_path}")
         
-        # Run the async method synchronously
-        return asyncio.run(self.analyze_complete(bill_data=bill_data))
+        # Check if there's already a running event loop (e.g., in Streamlit)
+        try:
+            loop = asyncio.get_running_loop()
+            # If we're in an event loop, run in a thread with a new loop
+            import concurrent.futures
+            import threading
+            
+            def run_in_thread():
+                return asyncio.run(self.analyze_complete(bill_data=bill_data))
+            
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(run_in_thread)
+                return future.result()
+        except RuntimeError:
+            # No event loop running, safe to use asyncio.run()
+            return asyncio.run(self.analyze_complete(bill_data=bill_data))
     
     def analyze_meter_data(self, meter_data_path: str) -> dict:
         """
@@ -335,8 +349,21 @@ class EnergyAgentOrchestrator:
         df = pd.read_csv(meter_data_path)
         meter_data_list = df.to_dict('records')
         
-        # Run the async method synchronously
-        return asyncio.run(self.analyze_complete(meter_data=meter_data_list))
+        # Check if there's already a running event loop
+        try:
+            loop = asyncio.get_running_loop()
+            # Run in a thread with a new loop
+            import concurrent.futures
+            
+            def run_in_thread():
+                return asyncio.run(self.analyze_complete(meter_data=meter_data_list))
+            
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(run_in_thread)
+                return future.result()
+        except RuntimeError:
+            # No event loop running
+            return asyncio.run(self.analyze_complete(meter_data=meter_data_list))
     
     async def analyze_complete(
         self,
@@ -478,11 +505,37 @@ class EnergyAgentOrchestrator:
     
     def _extract_result(self, result) -> dict:
         """Extract and structure the result from agent execution."""
-        if result and hasattr(result, 'content') and result.content.parts:
+        import json
+        
+        # Handle list of events from run_debug
+        if isinstance(result, list) and len(result) > 0:
+            # Get the last event which contains the final result
+            last_event = result[-1]
+            if hasattr(last_event, 'content') and last_event.content and last_event.content.parts:
+                response_text = last_event.content.parts[0].text
+                
+                # Try to parse JSON
+                try:
+                    if '{' in response_text and '}' in response_text:
+                        json_start = response_text.index('{')
+                        json_end = response_text.rindex('}') + 1
+                        json_str = response_text[json_start:json_end]
+                        return json.loads(json_str)
+                except:
+                    pass
+                
+                # Return as text if not JSON
+                return {
+                    "response": response_text,
+                    "status": "success",
+                    "full_text": response_text
+                }
+        
+        # Handle single event (backward compatibility)
+        elif result and hasattr(result, 'content') and result.content and result.content.parts:
             response_text = result.content.parts[0].text
             
             # Try to parse JSON
-            import json
             try:
                 if '{' in response_text and '}' in response_text:
                     json_start = response_text.index('{')
@@ -495,7 +548,8 @@ class EnergyAgentOrchestrator:
             # Return as text if not JSON
             return {
                 "response": response_text,
-                "status": "success"
+                "status": "success",
+                "full_text": response_text
             }
         
         return {
