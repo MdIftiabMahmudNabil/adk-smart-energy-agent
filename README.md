@@ -1236,6 +1236,20 @@ streamlit run dashboard/app.py
 
 ### Common Issues and Solutions
 
+#### Streamlit Dashboard JavaScript Error
+
+**Problem:** `TypeError: Failed to fetch dynamically imported module`
+
+**Solution:**
+
+1. **Hard refresh the browser:** Press `Ctrl+Shift+R` (Windows/Linux) or `Cmd+Shift+R` (Mac)
+2. **Clear browser cache:** Go to browser settings and clear cached files
+3. **Wait 1-2 minutes:** Streamlit Cloud may still be deploying updates
+4. **Try incognito mode:** Open dashboard in private/incognito window
+5. **Check Streamlit status:** Visit the app management page to see deployment status
+
+This is typically a browser caching issue after code updates are deployed to Streamlit Cloud.
+
 #### API Key Error
 
 **Problem:** `AuthenticationError: Invalid API key`
