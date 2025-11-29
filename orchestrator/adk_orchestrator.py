@@ -60,10 +60,16 @@ class EnergyAgentOrchestrator:
         self.session_service = InMemorySessionService()
         
         # Create enhanced agents with custom tools
-        self._setup_agents_with_tools()
-        
-        # Create multi-agent workflows
-        self._setup_workflows()
+        try:
+            self._setup_agents_with_tools()
+            
+            # Create multi-agent workflows
+            self._setup_workflows()
+        except Exception as e:
+            # If workflow setup fails, create basic agents without workflows
+            print(f"Warning: Workflow setup failed: {e}")
+            print("Using basic agent setup without workflows")
+            self._setup_basic_agents()
     
     def _setup_agents_with_tools(self):
         """Setup agents with custom function tools."""
@@ -121,6 +127,31 @@ class EnergyAgentOrchestrator:
             tools=[estimate_savings_potential],
             output_key="recommendations"
         )
+    
+    def _setup_basic_agents(self):
+        """Setup basic agents without workflows for fallback."""
+        # Just create simple agents without complex workflows
+        self.bill_parser_with_tools = Agent(
+            name="BillParser",
+            model="gemini-2.5-flash",
+            instruction="Parse utility bills and extract structured data."
+        )
+        
+        self.meter_analyzer_with_tools = Agent(
+            name="MeterAnalyzer",
+            model="gemini-2.5-flash",
+            instruction="Analyze meter consumption data and identify patterns."
+        )
+        
+        self.recommendation_engine_with_tools = Agent(
+            name="RecommendationEngine",
+            model="gemini-2.5-flash",
+            instruction="Generate energy-saving recommendations."
+        )
+        
+        # Set None for workflows since they failed to initialize
+        self.sequential_workflow = None
+        self.parallel_analysis_team = None
     
     def _setup_workflows(self):
         """Setup Sequential and Parallel agent workflows."""
