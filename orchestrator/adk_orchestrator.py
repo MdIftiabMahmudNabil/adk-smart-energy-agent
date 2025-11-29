@@ -331,8 +331,9 @@ class EnergyAgentOrchestrator:
             Dictionary with complete analysis results
         """
         # Create runner with session management
+        # Use sequential_workflow as the main workflow
         runner = Runner(
-            agent=self.hybrid_workflow,
+            agent=self.sequential_workflow if self.sequential_workflow else self.root_coordinator,
             app_name="SmartEnergyAgent",
             session_service=self.session_service
         )
