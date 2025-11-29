@@ -164,7 +164,6 @@ def show_bill_analysis():
                     
                     if bill_data and bill_data.get('status') != 'error':
                         st.success("✅ Bill parsed successfully!")
-                        st.json(bill_data)
                         
                         # Store in session state for download option
                         if 'extracted_bills' not in st.session_state:
@@ -174,9 +173,13 @@ def show_bill_analysis():
                         bill_data['source'] = 'image'
                         st.session_state.extracted_bills.append(bill_data)
                         
-                        # Use parsed data for full analysis
-                        with st.spinner("Generating recommendations..."):
-                            result = st.session_state.orchestrator.analyze_bill(bill_data=bill_data)
+                        # Convert parsed dict to text format for full analysis
+                        import json
+                        bill_text = json.dumps(bill_data, indent=2)
+                        
+                        # Run full analysis with all agents
+                        with st.spinner("🤖 Running comprehensive analysis with AI agents..."):
+                            result = st.session_state.orchestrator.analyze_bill(bill_data=bill_text)
                             st.session_state.analysis_results = result
                             st.rerun()
                     else:
@@ -196,7 +199,6 @@ def show_bill_analysis():
                 
                 if bill_data and bill_data.get('status') != 'error':
                     st.success("✅ Bill parsed successfully!")
-                    st.json(bill_data)
                     
                     # Store in session state for download option
                     if 'extracted_bills' not in st.session_state:
@@ -206,9 +208,9 @@ def show_bill_analysis():
                     bill_data['source'] = 'text'
                     st.session_state.extracted_bills.append(bill_data)
                     
-                    # Use parsed data for full analysis
-                    with st.spinner("Generating recommendations..."):
-                        result = st.session_state.orchestrator.analyze_bill(bill_data=bill_data)
+                    # Use original text for full analysis (better for AI agents)
+                    with st.spinner("🤖 Running comprehensive analysis with AI agents..."):
+                        result = st.session_state.orchestrator.analyze_bill(bill_data=bill_text)
                         st.session_state.analysis_results = result
                         st.rerun()
                 else:
