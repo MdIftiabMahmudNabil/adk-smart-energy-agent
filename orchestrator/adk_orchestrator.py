@@ -149,9 +149,25 @@ class EnergyAgentOrchestrator:
             instruction="Generate energy-saving recommendations."
         )
         
-        # Set None for workflows since they failed to initialize
-        self.sequential_workflow = None
+        # Create a simple sequential workflow even in fallback mode
+        self.sequential_workflow = SequentialAgent(
+            name="BasicEnergyAnalysis",
+            sub_agents=[
+                self.bill_parser_with_tools,
+                self.meter_analyzer_with_tools,
+                self.recommendation_engine_with_tools
+            ]
+        )
+        
+        # Set None for advanced workflows since they failed to initialize
         self.parallel_analysis_team = None
+        
+        # Create basic coordinator
+        self.root_coordinator = Agent(
+            name="EnergyAnalysisCoordinator",
+            model="gemini-2.5-flash",
+            instruction="Coordinate energy analysis and provide insights."
+        )
     
     def _setup_workflows(self):
         """Setup Sequential and Parallel agent workflows."""
