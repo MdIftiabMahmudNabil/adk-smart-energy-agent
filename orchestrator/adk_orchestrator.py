@@ -368,10 +368,10 @@ class EnergyAgentOrchestrator:
         
         # Run analysis - iterate through async generator
         last_event = None
-        async for event in runner.run(
+        async for event in runner.run_async(
             user_id=user_id,
             session_id=session_id,
-            new_message=request
+            new_message=types.Content(parts=[types.Part(text=request)])
         ):
             last_event = event
         
@@ -407,10 +407,10 @@ class EnergyAgentOrchestrator:
         
         # Iterate through async generator
         last_event = None
-        async for event in runner.run(
+        async for event in runner.run_async(
             user_id=user_id,
             session_id=session_id,
-            new_message=request
+            new_message=types.Content(parts=[types.Part(text=request)])
         ):
             last_event = event
         
@@ -448,10 +448,10 @@ class EnergyAgentOrchestrator:
         
         # Iterate through async generator
         last_event = None
-        async for event in runner.run(
+        async for event in runner.run_async(
             user_id=user_id,
             session_id=session_id,
-            new_message=request
+            new_message=types.Content(parts=[types.Part(text=request)])
         ):
             last_event = event
         
@@ -482,10 +482,10 @@ class EnergyAgentOrchestrator:
         
         # Iterate through async generator
         last_event = None
-        async for event in runner.run(
+        async for event in runner.run_async(
             user_id=user_id,
             session_id=session_id,
-            new_message=message
+            new_message=types.Content(parts=[types.Part(text=message)])
         ):
             last_event = event
         
