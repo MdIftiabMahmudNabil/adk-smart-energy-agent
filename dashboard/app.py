@@ -173,15 +173,10 @@ def show_bill_analysis():
                         bill_data['source'] = 'image'
                         st.session_state.extracted_bills.append(bill_data)
                         
-                        # Convert parsed dict to text format for full analysis
-                        import json
-                        bill_text = json.dumps(bill_data, indent=2)
-                        
-                        # Run full analysis with all agents
-                        with st.spinner("🤖 Running comprehensive analysis with AI agents..."):
-                            result = st.session_state.orchestrator.analyze_bill(bill_data=bill_text)
-                            st.session_state.analysis_results = result
-                            st.rerun()
+                        # Store parsed bill data in session for interactive analysis
+                        st.session_state.parsed_bill_data = bill_data
+                        st.session_state.analysis_stage = 'questions'
+                        st.rerun()
                     else:
                         st.error(f"❌ Failed to parse bill: {bill_data.get('message', 'Unknown error')}")
     
@@ -208,11 +203,11 @@ def show_bill_analysis():
                     bill_data['source'] = 'text'
                     st.session_state.extracted_bills.append(bill_data)
                     
-                    # Use original text for full analysis (better for AI agents)
-                    with st.spinner("🤖 Running comprehensive analysis with AI agents..."):
-                        result = st.session_state.orchestrator.analyze_bill(bill_data=bill_text)
-                        st.session_state.analysis_results = result
-                        st.rerun()
+                    # Store original text in session for interactive analysis
+                    st.session_state.parsed_bill_text = bill_text
+                    st.session_state.parsed_bill_data = bill_data
+                    st.session_state.analysis_stage = 'questions'
+                    st.rerun()
                 else:
                     st.error(f"❌ Failed to parse bill: {bill_data.get('message', 'Unknown error')}")
     
@@ -230,12 +225,128 @@ def show_bill_analysis():
             )
             
             if st.button("🔍 Analyze Sample", key="analyze_sample"):
-                with st.spinner("Analyzing bill..."):
-                    result = st.session_state.orchestrator.analyze_bill(bill_path=str(selected_bill))
-                    st.session_state.analysis_results = result
-                    st.rerun()
+                # Read sample bill and start interactive analysis
+                bill_text = selected_bill.read_text(encoding='utf-8')
+                st.session_state.parsed_bill_text = bill_text
+                st.session_state.analysis_stage = 'questions'
+                st.rerun()
         else:
             st.warning("No sample bills found. Run data_generation/generate_meter_data.py first.")
+    
+    # Show interactive questionnaire if bill is parsed
+    if hasattr(st.session_state, 'analysis_stage') and st.session_state.analysis_stage == 'questions':
+        show_interactive_questions()
+
+
+def show_interactive_questions():
+    """Show interactive questionnaire to gather usage patterns."""
+    st.divider()
+    st.header("📋 Tell us about your energy usage")
+    st.markdown("*Answer these questions to get personalized recommendations and anomaly detection*")
+    
+    with st.form("usage_questionnaire"):
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            property_type = st.selectbox(
+                "1. What type of property is this?",
+                ["Select...", "Apartment", "Single-family House", "Multi-family House", "Commercial Office", "Retail Store", "Industrial"]
+            )
+            
+            occupants = st.number_input(
+                "2. How many people live/work there?",
+                min_value=1, max_value=100, value=1, step=1
+            )
+            
+            main_appliances = st.multiselect(
+                "3. What are your main energy-consuming appliances?",
+                ["HVAC/Air Conditioning", "Electric Heating", "Water Heater", "Refrigerator", 
+                 "Washing Machine/Dryer", "Dishwasher", "Electric Stove/Oven", 
+                 "Pool Pump", "EV Charger", "Multiple Computers/Servers", "Industrial Equipment"]
+            )
+        
+        with col2:
+            peak_usage = st.selectbox(
+                "4. When is your peak energy usage?",
+                ["Select...", "Morning (6am-12pm)", "Afternoon (12pm-6pm)", "Evening (6pm-12am)", "Night (12am-6am)", "All day (constant usage)"]
+            )
+            
+            recent_changes = st.radio(
+                "5. Any recent changes in your household?",
+                ["No changes", "Added new appliances", "More people at home", "Started working from home", "Seasonal change (heating/cooling)"]
+            )
+            
+            billing_concerns = st.text_area(
+                "6. Any concerns about your bill?",
+                placeholder="e.g., Bill seems higher than usual, new charges appeared, usage spike in certain period..."
+            )
+        
+        submitted = st.form_submit_button("🚀 Get Personalized Analysis", type="primary", use_container_width=True)
+        
+        if submitted:
+            if property_type == "Select..." or peak_usage == "Select...":
+                st.error("Please answer all required questions (property type and peak usage)")
+            else:
+                # Store responses
+                st.session_state.user_responses = {
+                    'property_type': property_type,
+                    'occupants': occupants,
+                    'main_appliances': main_appliances,
+                    'peak_usage': peak_usage,
+                    'recent_changes': recent_changes,
+                    'billing_concerns': billing_concerns
+                }
+                
+                # Run analysis with context
+                with st.spinner("🤖 Analyzing your usage patterns and detecting anomalies..."):
+                    import json
+                    
+                    # Build context-aware prompt
+                    bill_data = st.session_state.get('parsed_bill_text', '') or json.dumps(st.session_state.get('parsed_bill_data', {}), indent=2)
+                    
+                    context_prompt = f"""BILL DATA:
+{bill_data}
+
+USER CONTEXT:
+- Property Type: {property_type}
+- Number of Occupants: {occupants}
+- Main Appliances: {', '.join(main_appliances) if main_appliances else 'Not specified'}
+- Peak Usage Time: {peak_usage}
+- Recent Changes: {recent_changes}
+- Billing Concerns: {billing_concerns if billing_concerns else 'None'}
+
+Based on the bill data and user context above, provide:
+
+1. ANOMALY DETECTION:
+   - Compare usage to typical patterns for this property type and number of occupants
+   - Identify any unusual spikes or patterns
+   - Flag potential billing errors or unexpected charges
+   - Analyze if concerns mentioned are justified
+
+2. PERSONALIZED RECOMMENDATIONS (7-10 specific recommendations):
+   - Prioritize based on user's appliances and usage patterns
+   - Calculate estimated savings for each recommendation
+   - Consider property type and occupancy
+   - Address any billing concerns mentioned
+   - Include immediate, medium-term, and long-term actions
+
+3. COST SAVINGS BREAKDOWN:
+   - Total estimated monthly and annual savings
+   - Quick wins (this month)
+   - Medium-term improvements (3-6 months)
+   - Long-term investments (1+ years)
+
+4. NEXT STEPS:
+   - Immediate action items specific to their situation
+   - Monitoring suggestions
+   - Follow-up recommendations
+
+Provide detailed, actionable insights."""
+
+                    result = st.session_state.orchestrator.analyze_bill(bill_data=context_prompt)
+                    st.session_state.analysis_results = result
+                    st.session_state.analysis_stage = 'results'
+                    st.rerun()
 
 
 def show_meter_analysis():
