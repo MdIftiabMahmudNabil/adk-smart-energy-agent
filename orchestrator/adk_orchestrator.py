@@ -249,6 +249,50 @@ class EnergyAgentOrchestrator:
             output_key="coordination_plan"
         )
     
+    def get_session_summary(self) -> dict:
+        """Get summary of current session state."""
+        return {
+            "status": "ready",
+            "workflows_available": self.sequential_workflow is not None,
+            "agents_loaded": True,
+            "session_service": "InMemorySessionService"
+        }
+    
+    def analyze_bill(self, bill_data: str = None, bill_path: str = None) -> dict:
+        """
+        Analyze a utility bill (synchronous wrapper for async method).
+        
+        Args:
+            bill_data: Raw bill text
+            bill_path: Path to bill file
+            
+        Returns:
+            Analysis results dictionary
+        """
+        import asyncio
+        # Run the async method synchronously
+        return asyncio.run(self.analyze_complete(bill_data=bill_data or bill_path))
+    
+    def analyze_meter_data(self, meter_data_path: str) -> dict:
+        """
+        Analyze meter consumption data (synchronous wrapper).
+        
+        Args:
+            meter_data_path: Path to CSV with meter data
+            
+        Returns:
+            Analysis results dictionary
+        """
+        import asyncio
+        import pandas as pd
+        
+        # Load meter data
+        df = pd.read_csv(meter_data_path)
+        meter_data_list = df.to_dict('records')
+        
+        # Run the async method synchronously
+        return asyncio.run(self.analyze_complete(meter_data=meter_data_list))
+    
     async def analyze_complete(
         self,
         bill_data: str = None,
