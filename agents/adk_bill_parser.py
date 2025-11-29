@@ -130,23 +130,14 @@ def parse_bill_from_image(image_path: str) -> dict:
             mime_type=f"image/{image_file.suffix.lower().replace('.', '')}"
         )
         
-        # Create proper Content with both image and text
-        from google.genai import types
-        content = types.Content(parts=[
+        # Create a message combining image and text instruction
+        message = [
             image_part,
-            types.Part(text="Parse this utility bill image and extract all key information.")
-        ])
+            "Parse this utility bill image and extract all key information including account number, billing period, consumption (kWh), rate, charges breakdown, and total amount."
+        ]
         
-        # Use run_async with proper content
-        events = []
-        async for event in runner.run_async(
-            user_id="bill_parser",
-            session_id="image_session",
-            new_message=content
-        ):
-            events.append(event)
-        
-        return events[-1] if events else None
+        # Use run_debug which handles sessions automatically
+        return await runner.run_debug(message)
     
     # Handle event loop for Streamlit compatibility
     import threading
@@ -170,9 +161,32 @@ def parse_bill_from_image(image_path: str) -> dict:
     if exception:
         raise exception
     
-    # Extract the response content
-    if result and hasattr(result, 'content') and result.content.parts:
-        import json
+    # Extract the response content from list of events
+    import json
+    
+    # Handle list of events from run_debug
+    if isinstance(result, list) and len(result) > 0:
+        last_event = result[-1]
+        if hasattr(last_event, 'content') and last_event.content and last_event.content.parts:
+            response_text = last_event.content.parts[0].text
+            
+            # Try to parse JSON from the response
+            try:
+                if '{' in response_text and '}' in response_text:
+                    json_start = response_text.index('{')
+                    json_end = response_text.rindex('}') + 1
+                    json_str = response_text[json_start:json_end]
+                    return json.loads(json_str)
+            except:
+                pass
+                
+            return {
+                "raw_response": response_text,
+                "status": "partial_parse"
+            }
+    
+    # Handle single event (backward compatibility)
+    elif result and hasattr(result, 'content') and result.content and result.content.parts:
         response_text = result.content.parts[0].text
         
         # Try to parse JSON from the response
