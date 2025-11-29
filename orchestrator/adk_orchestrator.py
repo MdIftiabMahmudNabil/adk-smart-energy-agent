@@ -251,7 +251,16 @@ class EnergyAgentOrchestrator:
     
     def get_session_summary(self) -> dict:
         """Get summary of current session state."""
+        import uuid
+        # Generate a consistent session ID or use existing one
+        if not hasattr(self, '_session_id'):
+            self._session_id = str(uuid.uuid4())
+        if not hasattr(self, '_analyses_count'):
+            self._analyses_count = 0
+        
         return {
+            "session_id": self._session_id,
+            "analyses_performed": self._analyses_count,
             "status": "ready",
             "workflows_available": self.sequential_workflow is not None,
             "agents_loaded": True,
@@ -270,6 +279,10 @@ class EnergyAgentOrchestrator:
             Analysis results dictionary
         """
         import asyncio
+        # Increment analyses count
+        if not hasattr(self, '_analyses_count'):
+            self._analyses_count = 0
+        self._analyses_count += 1
         # Run the async method synchronously
         return asyncio.run(self.analyze_complete(bill_data=bill_data or bill_path))
     
@@ -286,7 +299,12 @@ class EnergyAgentOrchestrator:
         import asyncio
         import pandas as pd
         
-        # Load meter data
+        # Increment analyses count
+        if not hasattr(self, '_analyses_count'):
+            self._analyses_count = 0
+        self._analyses_count += 1
+        
+        # Load meter data from CSV
         df = pd.read_csv(meter_data_path)
         meter_data_list = df.to_dict('records')
         
