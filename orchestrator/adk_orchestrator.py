@@ -357,17 +357,9 @@ class EnergyAgentOrchestrator:
         Returns:
             Dictionary with complete analysis results
         """
-        # Generate session_id if not provided
-        if session_id is None:
-            import uuid
-            session_id = str(uuid.uuid4())
-        
-        # Create runner with session management
-        # Use sequential_workflow as the main workflow
-        runner = Runner(
-            agent=self.sequential_workflow if self.sequential_workflow else self.root_coordinator,
-            app_name="SmartEnergyAgent",
-            session_service=self.session_service
+        # Use InMemoryRunner for simpler execution without complex session management
+        runner = InMemoryRunner(
+            agent=self.sequential_workflow if self.sequential_workflow else self.root_coordinator
         )
         
         # Build analysis request
@@ -382,16 +374,10 @@ class EnergyAgentOrchestrator:
             for reading in meter_data[:50]:  # Limit to 50 readings
                 request += f"{reading.get('timestamp')},{reading.get('consumption_kwh')}\n"
         
-        # Run analysis - iterate through async generator
-        last_event = None
-        async for event in runner.run_async(
-            user_id=user_id,
-            session_id=session_id,
-            new_message=types.Content(parts=[types.Part(text=request)])
-        ):
-            last_event = event
+        # Run analysis using run_debug for simple execution
+        result = await runner.run_debug(request)
         
-        return self._extract_result(last_event)
+        return self._extract_result(result)
     
     async def analyze_with_parallel(
         self,
@@ -410,32 +396,16 @@ class EnergyAgentOrchestrator:
         Returns:
             Dictionary with parallel analysis results
         """
-        # Generate session_id if not provided
-        if session_id is None:
-            import uuid
-            session_id = str(uuid.uuid4())
-        
-        runner = Runner(
-            agent=self.parallel_analysis_team,
-            app_name="SmartEnergyAgent",
-            session_service=self.session_service
-        )
+        runner = InMemoryRunner(agent=self.parallel_analysis_team)
         
         # Format data
         request = "Analyze this meter data:\n\nTimestamp,Consumption_kWh\n"
         for reading in meter_data[:50]:
             request += f"{reading.get('timestamp')},{reading.get('consumption_kwh')}\n"
         
-        # Iterate through async generator
-        last_event = None
-        async for event in runner.run_async(
-            user_id=user_id,
-            session_id=session_id,
-            new_message=types.Content(parts=[types.Part(text=request)])
-        ):
-            last_event = event
-        
-        return self._extract_result(last_event)
+        # Run analysis
+        result = await runner.run_debug(request)
+        return self._extract_result(result)
     
     async def analyze_sequential(
         self,
@@ -500,27 +470,11 @@ class EnergyAgentOrchestrator:
         Returns:
             Dictionary with response
         """
-        # Generate session_id if not provided
-        if session_id is None:
-            import uuid
-            session_id = str(uuid.uuid4())
+        runner = InMemoryRunner(agent=self.root_coordinator)
         
-        runner = Runner(
-            agent=self.root_coordinator,
-            app_name="SmartEnergyAgent",
-            session_service=self.session_service
-        )
-        
-        # Iterate through async generator
-        last_event = None
-        async for event in runner.run_async(
-            user_id=user_id,
-            session_id=session_id,
-            new_message=types.Content(parts=[types.Part(text=message)])
-        ):
-            last_event = event
-        
-        return self._extract_result(last_event)
+        # Run chat
+        result = await runner.run_debug(message)
+        return self._extract_result(result)
     
     def _extract_result(self, result) -> dict:
         """Extract and structure the result from agent execution."""
