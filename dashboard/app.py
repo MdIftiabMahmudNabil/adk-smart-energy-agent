@@ -55,8 +55,8 @@ def main():
         # Session info
         session_info = st.session_state.orchestrator.get_session_summary()
         st.subheader("💾 Session Info")
-        st.caption(f"ID: {session_info['session_id'][:20]}...")
-        st.caption(f"Analyses: {session_info['analyses_performed']}")
+        st.caption(f"ID: {session_info.get('session_id', 'N/A')[:20]}...")
+        st.caption(f"Analyses: {session_info.get('analyses_performed', 0)}")
         
         st.divider()
         
