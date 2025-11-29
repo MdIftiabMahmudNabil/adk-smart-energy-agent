@@ -40,6 +40,8 @@ env/
 # Data files
 data/raw/*
 !data/raw/.gitkeep
+!data/raw/sample_*.txt
+!data/raw/sample_*.csv
 data/processed/*
 !data/processed/.gitkeep
 

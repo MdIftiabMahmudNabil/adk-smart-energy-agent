@@ -1,0 +1,37 @@
+
+============================================================
+               CITY ELECTRIC UTILITY COMPANY
+============================================================
+
+Account Number: 000123456780
+Service Address: 123 Main Street, Anytown, ST 12345
+Billing Period: 08/31/2025 - 09/30/2025
+
+============================================================
+ENERGY USAGE SUMMARY
+============================================================
+
+Total Usage: 854 kWh
+Average Daily Usage: 28.5 kWh
+Rate Tier: Tier 3
+
+Previous Reading: 85488 kWh
+Current Reading: 61864 kWh
+
+============================================================
+CHARGES BREAKDOWN
+============================================================
+
+Energy Charge (854 kWh @ $0.1678/kWh)    $143.37
+Delivery Charge                                    $32.94
+                                                   ----------
+Subtotal                                           $176.31
+Tax (8%)                                            $14.10
+                                                   ==========
+TOTAL AMOUNT DUE                                   $190.41
+
+============================================================
+Payment Due Date: 10/15/2025
+
+Thank you for your business!
+============================================================
