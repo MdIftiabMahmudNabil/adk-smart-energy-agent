@@ -389,56 +389,17 @@ class EnergyAgentOrchestrator:
             agent=self.sequential_workflow if self.sequential_workflow else self.root_coordinator
         )
         
-        # Build comprehensive analysis request with specific instructions
-        request = """Perform a comprehensive energy analysis with the following structure:
-
-1. BILL SUMMARY
-   - Extract key metrics (consumption, charges, billing period)
-   - Calculate average daily usage and cost per kWh
-
-2. USAGE PATTERN ANALYSIS
-   - Ask the user 3-5 questions to understand their usage patterns:
-     * What type of property? (apartment, house, commercial)
-     * How many people live/work there?
-     * What are the main energy-consuming appliances?
-     * What time of day is peak usage? (if meter data available)
-     * Any recent changes in consumption?
-
-3. ANOMALY DETECTION
-   - Identify unusual patterns or spikes in consumption
-   - Compare current usage to typical patterns
-   - Flag any billing errors or unexpected charges
-   - Detect seasonal anomalies
-
-4. PERSONALIZED RECOMMENDATIONS
-   - Provide 5-7 specific, actionable recommendations
-   - Calculate estimated savings for each recommendation
-   - Prioritize recommendations by impact and ease of implementation
-   - Include both immediate actions and long-term improvements
-
-5. COST SAVINGS POTENTIAL
-   - Total estimated monthly and annual savings
-   - Quick wins (0-3 months)
-   - Medium-term improvements (3-12 months)
-   - Long-term investments (1+ years)
-
-6. NEXT STEPS
-   - Immediate action items
-   - Monitoring suggestions
-   - Follow-up recommendations
-
-"""
+        # Build analysis request with data only
+        request = "Analyze the following energy data and provide comprehensive recommendations:\n\n"
         
         if bill_data:
-            request += f"\nBILL DATA:\n{bill_data}\n\n"
+            request += f"BILL DATA:\n{bill_data}\n\n"
         
         if meter_data:
             request += f"METER DATA:\n"
             request += "Timestamp,Consumption_kWh\n"
             for reading in meter_data[:50]:  # Limit to 50 readings
                 request += f"{reading.get('timestamp')},{reading.get('consumption_kwh')}\n"
-        
-        request += "\nProvide a detailed, well-structured response following the format above."
         
         # Run analysis using run_debug for simple execution
         result = await runner.run_debug(request)
