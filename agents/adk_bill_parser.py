@@ -116,10 +116,7 @@ def parse_bill_from_image(image_path: str) -> dict:
     if not image_file.exists():
         return {"status": "error", "message": f"Image file not found: {image_path}"}
     
-    # Create runner
-    runner = InMemoryRunner(agent=bill_parser_agent)
-    
-    # Use the model directly for image parsing (simpler than runner)
+    # Use the model directly for image parsing (no runner needed for one-shot image analysis)
     from google.genai import Client
     import os
     from dotenv import load_dotenv
