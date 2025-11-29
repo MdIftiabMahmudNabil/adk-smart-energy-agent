@@ -82,7 +82,7 @@ def main():
                         data=csv,
                         file_name=f"bills_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                         mime="text/csv",
-                        use_container_width=True
+                        width='stretch'
                     )
                 
                 with col2:
@@ -98,7 +98,7 @@ def main():
                         data=excel_data,
                         file_name=f"bills_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        use_container_width=True
+                        width='stretch'
                     )
             else:
                 st.caption("⚠️ Data will be discarded after session ends")
@@ -151,7 +151,7 @@ def show_bill_analysis():
         if uploaded_file:
             # Show image preview
             if uploaded_file.type.startswith('image'):
-                st.image(uploaded_file, caption="Bill Image Preview", use_container_width=True)
+                st.image(uploaded_file, caption="Bill Image Preview", width='stretch')
             
             # Save temporarily for processing
             with tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.name.split('.')[-1]}") as tmp:

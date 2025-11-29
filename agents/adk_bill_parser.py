@@ -130,11 +130,45 @@ def parse_bill_from_image(image_path: str) -> dict:
             mime_type=f"image/{image_file.suffix.lower().replace('.', '')}"
         )
         
-        return await runner.run_debug(
-            [image_part, "Parse this utility bill image and extract all key information."]
-        )
+        # Create proper Content with both image and text
+        from google.genai import types
+        content = types.Content(parts=[
+            image_part,
+            types.Part(text="Parse this utility bill image and extract all key information.")
+        ])
+        
+        # Use run_async with proper content
+        events = []
+        async for event in runner.run_async(
+            user_id="bill_parser",
+            session_id="image_session",
+            new_message=content
+        ):
+            events.append(event)
+        
+        return events[-1] if events else None
     
-    result = asyncio.run(run_agent())
+    # Handle event loop for Streamlit compatibility
+    import threading
+    result = None
+    exception = None
+    
+    def run_in_thread():
+        nonlocal result, exception
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result = loop.run_until_complete(run_agent())
+            loop.close()
+        except Exception as e:
+            exception = e
+    
+    thread = threading.Thread(target=run_in_thread)
+    thread.start()
+    thread.join()
+    
+    if exception:
+        raise exception
     
     # Extract the response content
     if result and hasattr(result, 'content') and result.content.parts:
