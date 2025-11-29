@@ -55,12 +55,9 @@ class EnergyAgentOrchestrator:
         """
         self.use_database_sessions = use_database_sessions
         
-        # Setup session service
-        if use_database_sessions:
-            db_url = "sqlite:///data/processed/energy_agent_sessions.db"
-            self.session_service = DatabaseSessionService(db_url=db_url)
-        else:
-            self.session_service = InMemorySessionService()
+        # Setup session service (use InMemorySessionService for now)
+        # Database sessions require additional setup
+        self.session_service = InMemorySessionService()
         
         # Create enhanced agents with custom tools
         self._setup_agents_with_tools()
@@ -163,14 +160,8 @@ class EnergyAgentOrchestrator:
         anomaly_detector_sequential = Agent(
             name="AnomalyDetectorSequential",
             model="gemini-2.5-flash",
-            description="Detects unusual consumption patterns and spikes in energy usage.",
-            instruction="""You are an expert at detecting anomalies in energy consumption data.
-            
-            Analyze the consumption data and identify unusual patterns, spikes, or drops.
-            For each anomaly, explain possible causes and severity.
-            
-            Return JSON with anomalies list and recommendations.
-            """,
+            description="Detects unusual consumption patterns and spikes in energy usage",
+            instruction="You are an expert at detecting anomalies in energy consumption data. Analyze the consumption data and identify unusual patterns, spikes, or drops. For each anomaly, explain possible causes and severity. Return JSON with anomalies list and recommendations.",
             output_key="anomaly_report"
         )
         
