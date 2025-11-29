@@ -133,11 +133,13 @@ Recommendation: Inspect thermostat and HVAC control system
 
 ### 4. AI-Powered Recommendations
 
-- **Personalized strategies**: Based on actual usage patterns and rate structures
+- **Interactive questionnaire**: Asks users about property type, occupancy, appliances, and usage patterns before analysis
+- **Context-aware personalization**: Recommendations tailored to user's specific situation (7-10 suggestions)
+- **Anomaly detection with context**: Compares usage to typical patterns for similar properties
 - **Cost-benefit analysis**: Savings projection for each recommendation
 - **Implementation difficulty**: Easy, medium, or hard classification
 - **ROI timeline**: Payback period in months
-- **Priority ranking**: Highest-impact recommendations first
+- **Priority ranking**: Highest-impact recommendations first based on user responses
 
 **Recommendation Example:**
 
@@ -550,27 +552,40 @@ streamlit run dashboard/app.py
    - Use Sample (pre-loaded example)
 
 2. **Submit for Analysis**
-   - System processes input
+   - System processes input using Gemini Vision (for images) or text parsing
    - Displays extraction confidence
    - Shows progress indicators
 
-3. **Review Results**
+3. **Interactive Questionnaire** (NEW)
+   - Answer 6 personalized questions about your usage:
+     - Property type (apartment, house, commercial, etc.)
+     - Number of occupants
+     - Main energy-consuming appliances
+     - Peak usage time patterns
+     - Recent household/business changes
+     - Specific billing concerns
+   - Enables context-aware anomaly detection
+   - Generates truly personalized recommendations
+
+4. **Review Results**
    - Extracted bill data with confidence scores
    - Consumption pattern visualizations
-   - Anomaly highlights with explanations
+   - Context-aware anomaly highlights with explanations
+   - Comparison to typical patterns for your property type
 
-4. **Examine Recommendations**
-   - Prioritized savings strategies
-   - Annual savings projections
+5. **Examine Recommendations**
+   - 7-10 personalized savings strategies based on your responses
+   - Annual savings projections tailored to your situation
    - Implementation difficulty assessment
    - ROI timeline for each action
+   - Prioritized by impact and feasibility
 
-5. **Export Data** (Optional)
+6. **Export Data** (Optional)
    - Choose CSV or Excel format
    - Download to local system
    - Optionally discard data
 
-6. **Multi-Bill Analysis**
+7. **Multi-Bill Analysis**
    - Upload additional bills in same session
    - Compare across billing periods
    - Track savings over time
