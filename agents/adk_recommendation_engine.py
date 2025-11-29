@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from google.genai.adk import Agent
+from google.adk.agents import Agent
 from utils.config import MODEL_NAME
 
 # Define the Recommendation Engine Agent using ADK
@@ -89,7 +89,7 @@ def generate_recommendations(
     Returns:
         Dictionary with recommendations and savings estimates
     """
-    from google.genai.adk import InMemoryRunner
+    from google.adk.runners import InMemoryRunner
     import json
     
     # Build context for the agent

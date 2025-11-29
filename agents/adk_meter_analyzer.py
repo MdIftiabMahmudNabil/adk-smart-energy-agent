@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from google.genai.adk import Agent
+from google.adk.agents import Agent
 from utils.config import MODEL_NAME
 
 # Define the Meter Analyzer Agent using ADK
@@ -70,7 +70,7 @@ def analyze_meter_data(meter_data: list) -> dict:
     Returns:
         Dictionary with analysis results and insights
     """
-    from google.genai.adk import InMemoryRunner
+    from google.adk.runners import InMemoryRunner
     import json
     
     # Format data for the agent

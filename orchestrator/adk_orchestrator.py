@@ -15,9 +15,9 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from google.genai.adk import Agent, SequentialAgent, ParallelAgent
-from google.genai.adk import InMemoryRunner, Runner
-from google.genai.adk import InMemorySessionService
+from google.adk.agents import Agent, SequentialAgent, ParallelAgent
+from google.adk.runners import InMemoryRunner, Runner
+from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
 # Import custom tools

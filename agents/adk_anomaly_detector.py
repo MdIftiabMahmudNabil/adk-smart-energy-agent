@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from google.genai.adk import Agent
+from google.adk.agents import Agent
 from utils.config import MODEL_NAME
 
 # Define the Anomaly Detector Agent using ADK
@@ -78,7 +78,7 @@ def detect_anomalies(meter_data: list, threshold_multiplier: float = 2.0) -> dic
     Returns:
         Dictionary with detected anomalies and analysis
     """
-    from google.genai.adk import InMemoryRunner
+    from google.adk.runners import InMemoryRunner
     import json
     import statistics
     

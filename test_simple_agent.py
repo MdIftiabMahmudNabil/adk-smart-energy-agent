@@ -9,8 +9,8 @@ sys.path.append(str(Path(__file__).parent))
 from utils import config
 
 import asyncio
-from google.genai.adk import Agent
-from google.genai.adk import InMemoryRunner
+from google.adk.agents import Agent
+from google.adk.runners import InMemoryRunner
 
 # Create a simple test agent
 test_agent = Agent(

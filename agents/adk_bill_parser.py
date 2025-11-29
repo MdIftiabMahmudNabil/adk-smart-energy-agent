@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from google.genai.adk import Agent
+from google.adk.agents import Agent
 from google.genai import types
 from utils.config import MODEL_NAME
 
@@ -106,7 +106,7 @@ def parse_bill_from_image(image_path: str) -> dict:
     Returns:
         Dictionary with structured bill data
     """
-    from google.genai.adk import InMemoryRunner
+    from google.adk.runners import InMemoryRunner
     from google.genai.types import Part
     import asyncio
     from pathlib import Path
